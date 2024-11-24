@@ -49,12 +49,12 @@ font:
         type: web
       id: web_font_6
       size: 6
-      ##### https://github.com/Templarian/MaterialDesign-Webfont/tree/6b7bfd3c201c1185129e819e02dc2505dbb82994
+      # font from https://github.com/Templarian/MaterialDesign-Webfont/tree/6b7bfd3c201c1185129e819e02dc2505dbb82994
     - file: "fonts/MaterialDesign-Webfont-master/fonts/materialdesignicons-webfont.ttf"
       id: wifi_font
       size: 25
       glyphs: [
-        # Wifi / thank you https://github.com/fredrike/esphome-node
+        # Wifi
         '󰤟', # mdi-wifi-strength-1
         '󰤢', # mdi-wifi-strength-2
         '󰤥', # mdi-wifi-strength-3
@@ -80,7 +80,6 @@ display:
       int x, y, c;
       // Print "Rack #1" in top center.
       it.printf(64, 0, id(web_font_14), TextAlign::TOP_CENTER, "Rack #1");
-
       // Print time in HH:MM format
       it.strftime(0, 60, id(web_font_14), TextAlign::BASELINE_LEFT, "%H:%M", id(sntp_time).now());
       // Print inside temperature (from homeassistant sensor)
@@ -88,7 +87,7 @@ display:
         it.printf(127, 20, id(web_font2), TextAlign::TOP_RIGHT , "%.1f°C", id(bme680_temp).state);
         it.printf(127, 60, id(web_font_14), TextAlign::BASELINE_RIGHT , "%.1f%%", id(bme680_hum).state);
       }
-      ###### Thanks for some inspiration based on https://github.com/fredrike/esphome-node 
+
       if (id(wifisignal).has_state()) {
         x = 0, y = 25;
         if (id(wifisignal).state >= -50) {
@@ -108,7 +107,7 @@ display:
             it.print(x, y, id(wifi_font), TextAlign::BASELINE_LEFT, "󰤫");
         }
       }
-    # ################################################
+
 sensor:
   - platform: bme680
     temperature:
@@ -193,7 +192,10 @@ text_sensor:
       else {
         return {"unknown"};
       }
-
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      id: ip_address 
 
 time:
   - platform: sntp
