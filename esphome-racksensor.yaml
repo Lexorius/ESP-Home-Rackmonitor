@@ -49,6 +49,7 @@ font:
         type: web
       id: web_font_6
       size: 6
+      ##### https://github.com/Templarian/MaterialDesign-Webfont/tree/6b7bfd3c201c1185129e819e02dc2505dbb82994
     - file: "fonts/MaterialDesign-Webfont-master/fonts/materialdesignicons-webfont.ttf"
       id: wifi_font
       size: 25
