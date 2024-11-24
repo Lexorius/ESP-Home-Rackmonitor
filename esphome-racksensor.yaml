@@ -1,5 +1,5 @@
 esphome:
-  name: rack-sensor-v02
+  name: rack-sensor-v1
 
 rp2040:
   board: rpipicow
@@ -15,11 +15,11 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: "<enckey>"
+    key: !secret rack_encrypt
 
 ota:
   - platform: esphome
-    password: "<esphome-password>"
+    password: !secret rack_ota
 
 wifi:
   ssid: !secret wifi_ssid
@@ -28,7 +28,7 @@ wifi:
   # Enable fallback hotspot in case wifi connection fails
   ap:
     ssid: "Sensory-Pi Fallback Hotspot"
-    password: "IRJ7gwNZCKKW"
+    password: !secret rack_backupap
 
 font:
     - file: "https://github.com/IdreesInc/Monocraft/releases/download/v3.0/Monocraft.ttf"
@@ -39,15 +39,27 @@ font:
         type: web
       id: web_font2
       size: 24
-    - file: 'fonts/silkscreen.ttf'
-      id: font1
-      size: 8
-    - file: 'fonts/Roboto-Regular.ttf'
-      id: font2
-      size: 48
-    - file: 'fonts/LCD Normal.ttf'
-      id: font3
+    - file:
+        url: "https://github.com/IdreesInc/Monocraft/releases/download/v3.0/Monocraft.ttf"
+        type: web
+      id: web_font_14
       size: 14
+    - file:
+        url: "https://github.com/IdreesInc/Monocraft/releases/download/v3.0/Monocraft.ttf"
+        type: web
+      id: web_font_6
+      size: 6
+    - file: "fonts/MaterialDesign-Webfont-master/fonts/materialdesignicons-webfont.ttf"
+      id: wifi_font
+      size: 25
+      glyphs: [
+        # Wifi / thank you https://github.com/fredrike/esphome-node
+        '󰤟', # mdi-wifi-strength-1
+        '󰤢', # mdi-wifi-strength-2
+        '󰤥', # mdi-wifi-strength-3
+        '󰤨', # mdi-wifi-strength-4
+        '󰤫', # mdi-wifi-strength-alert-outline
+      ]
 
 i2c:
   sda: 20
@@ -64,17 +76,38 @@ display:
     model: "SSD1306 128x64"
     address: 0x3C
     lambda: |-
+      int x, y, c;
       // Print "Rack #1" in top center.
-      it.printf(64, 0, id(font1), TextAlign::TOP_CENTER, "Rack #1");
+      it.printf(64, 0, id(web_font_14), TextAlign::TOP_CENTER, "Rack #1");
 
       // Print time in HH:MM format
-      it.strftime(0, 60, id(font2), TextAlign::BASELINE_LEFT, "%H:%M", id(sntp_time).now());
+      it.strftime(0, 60, id(web_font_14), TextAlign::BASELINE_LEFT, "%H:%M", id(sntp_time).now());
       // Print inside temperature (from homeassistant sensor)
       if (id(bme680_temp).has_state()) {
-        it.printf(127, 23, id(font3), TextAlign::TOP_RIGHT , "%.1f°", id(bme680_temp).state);
+        it.printf(127, 20, id(web_font2), TextAlign::TOP_RIGHT , "%.1f°C", id(bme680_temp).state);
+        it.printf(127, 60, id(web_font_14), TextAlign::BASELINE_RIGHT , "%.1f%%", id(bme680_hum).state);
       }
-
-
+      ###### Thanks for some inspiration based on https://github.com/fredrike/esphome-node 
+      if (id(wifisignal).has_state()) {
+        x = 0, y = 25;
+        if (id(wifisignal).state >= -50) {
+            //Excellent
+            it.print(x, y, id(wifi_font), TextAlign::BASELINE_LEFT, "󰤨");
+        } else if (id(wifisignal).state  >= -60) {
+            //Good
+            it.print(x, y, id(wifi_font), TextAlign::BASELINE_LEFT, "󰤥");
+        } else if (id(wifisignal).state  >= -67) {
+            //Fair
+            it.print(x, y, id(wifi_font), TextAlign::BASELINE_LEFT, "󰤢");
+        } else if (id(wifisignal).state  >= -70) {
+            //Weak
+            it.print(x, y, id(wifi_font), TextAlign::BASELINE_LEFT, "󰤟");
+        } else {
+            //Unlikely working signal
+            it.print(x, y, id(wifi_font), TextAlign::BASELINE_LEFT, "󰤫");
+        }
+      }
+    # ################################################
 sensor:
   - platform: bme680
     temperature:
@@ -82,12 +115,13 @@ sensor:
       name: "BME680 Temperature"
       oversampling: 16x
     pressure:
+      id: bme680_pressure
       name: "BME680 Pressure"
     humidity:
-      id: "humidity"
+      id: bme680_hum
       name: "BME680 Humidity"
     gas_resistance:
-      id: "gas_resistance"
+      id: bme680_gas
       name: "BME680 Gas Resistance"
     address: 0x77
     update_interval: 60s
@@ -97,12 +131,17 @@ sensor:
     icon: "mdi:gauge"
     # calculation: comp_gas = log(R_gas[ohm]) + 0.04 log(Ohm)/%rh * hum[%rh]
     lambda: |-
-      return log(id(gas_resistance).state) + 0.04 *  id(humidity).state;
+      return log(id(bme680_gas).state) + 0.04 *  id(bme680_pressure).state;
     state_class: "measurement"
     
   - platform: adc
     pin: GPIO26
     name: "watersensor"
+    update_interval: 60s
+
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    id: wifisignal
     update_interval: 60s
 
 binary_sensor:
@@ -121,6 +160,7 @@ binary_sensor:
         pullup: true
     name: "GPIO6" 
 
+  
 
 
 text_sensor:
