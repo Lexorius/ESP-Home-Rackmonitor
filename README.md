@@ -10,3 +10,4 @@ Features wishlist:
   - maybe external temperature sensor
   - Display optional
 
+'''  DO NOT ORDER THE FRITZING PCB YET - IT ISN'T TESTED '''
