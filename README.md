@@ -21,9 +21,10 @@ this is a small sensor build for the raspberry pi pico w . It is ment to go into
           - Clock from NTP Server
           - Tempreture and humidity
 
-      - Missing Features Failures: 
+      - Missing Features / Failures: 
           - external sensor
           - Made the Raspberry Pi Pico W on the wrong side. 
+          - Hole for display connector to small
 
 --------------------------------------------------------------------------------------------------------------------------------          
 
