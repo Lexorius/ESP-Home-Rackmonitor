@@ -2,7 +2,7 @@ Hi,
 this is a small sensor build for the raspberry pi pico w . It is ment to go into some 19" racks to messure the temperatur and all relevant things. 
 
 
-31.11.2024: 
+30.11.2024: 
 
   the first batch of the PCB was delivered today - the first test where done. At The Moment the wholes for the display are a little bit to small, but you can soder a display to it. i've killed two bme680 in testing (i guess it was the sensors from the bradboard)
 
